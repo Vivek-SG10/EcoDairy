@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoDairy: Smart Carbon Footprint Analyzer for Dairy Farms</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<!-- ======== HEADER ======== -->
+<header id="app-header">
+  <div class="header-inner">
+    <div class="logo">
+      <i data-lucide="leaf"></i>
+      <span class="logo-text">Eco<strong>Dairy</strong></span>
+    </div>
+    <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu">
+      <i data-lucide="menu"></i>
+    </button>
+    <nav id="main-nav">
+      <ul>
+        <li><a href="#" class="nav-link active" data-section="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+        <li><a href="#" class="nav-link" data-section="simulator"><i data-lucide="flask-conical"></i> Simulator</a></li>
+        <li><a href="#" class="nav-link" data-section="predictions"><i data-lucide="trending-up"></i> Predictions</a></li>
+        <li><a href="#" class="nav-link" data-section="recommendations"><i data-lucide="lightbulb"></i> Recommendations</a></li>
+        <li><a href="#" class="nav-link" data-section="compare"><i data-lucide="bar-chart-3"></i> Compare</a></li>
+        <li><a href="#" class="nav-link" data-section="about"><i data-lucide="info"></i> About</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="app-main">
+
+<!-- ======== SECTION: DASHBOARD ======== -->
+<section class="section active" id="section-dashboard">
+  <div class="section-header">
+    <h1><i data-lucide="gauge"></i> Farm Emissions Dashboard</h1>
+    <p class="section-subtitle">Adjust farm parameters to see real-time emission calculations</p>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- LEFT: Farm Parameters -->
+    <div class="panel" id="params-panel">
+      <div class="panel-header">
+        <h2><i data-lucide="settings"></i> Farm Parameters</h2>
+        <div class="panel-actions">
+          <button id="btn-reset" class="btn btn-secondary btn-sm"><i data-lucide="rotate-ccw"></i> Reset</button>
+          <button id="btn-load-case-study" class="btn btn-secondary btn-sm"><i data-lucide="book-open"></i> Load Case Study</button>
+        </div>
+      </div>
+
+      <!-- Number of Cows -->
+      <div class="input-group">
+        <label for="input-cows">
+          <span class="param-label">Number of Cows</span>
+          <span class="param-unit">(head)</span>
+          <span class="tooltip-trigger" data-tooltip="Total number of dairy cows on the farm.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-cows" min="1" max="100" value="10" step="1">
+          <input type="number" id="input-cows" min="1" max="100" value="10" step="1">
+        </div>
+      </div>
+
+      <!-- Methane per Cow -->
+      <div class="input-group">
+        <label for="input-methane">
+          <span class="param-label">Methane Emissions per Cow</span>
+          <span class="param-unit">(kg CO₂e/yr)</span>
+          <span class="tooltip-trigger" data-tooltip="Annual enteric methane-related emissions per cow, expressed in CO₂ equivalent.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-methane" min="500" max="3000" value="1500" step="10">
+          <input type="number" id="input-methane" min="500" max="3000" value="1500" step="10">
+        </div>
+      </div>
+
+      <!-- Electricity -->
+      <div class="input-group">
+        <label for="input-electricity">
+          <span class="param-label">Electricity Consumption</span>
+          <span class="param-unit">(kWh/yr)</span>
+          <span class="tooltip-trigger" data-tooltip="Annual electricity consumed by farm operations such as milking, cooling, and lighting.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-electricity" min="0" max="20000" value="2000" step="100">
+          <input type="number" id="input-electricity" min="0" max="20000" value="2000" step="100">
+        </div>
+      </div>
+
+      <!-- Diesel -->
+      <div class="input-group">
+        <label for="input-diesel">
+          <span class="param-label">Diesel Consumption</span>
+          <span class="param-unit">(litres/yr)</span>
+          <span class="tooltip-trigger" data-tooltip="Annual diesel fuel used for farm vehicles, tractors, and machinery.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-diesel" min="0" max="2000" value="150" step="10">
+          <input type="number" id="input-diesel" min="0" max="2000" value="150" step="10">
+        </div>
+      </div>
+
+      <!-- Feed -->
+      <div class="input-group">
+        <label for="input-feed">
+          <span class="param-label">Purchased Cattle Feed</span>
+          <span class="param-unit">(kg/yr)</span>
+          <span class="tooltip-trigger" data-tooltip="Annual weight of purchased cattle feed. Excludes on-farm forage.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-feed" min="0" max="50000" value="5000" step="100">
+          <input type="number" id="input-feed" min="0" max="50000" value="5000" step="100">
+        </div>
+      </div>
+
+      <!-- Manure per Cow -->
+      <div class="input-group">
+        <label for="input-manure">
+          <span class="param-label">Manure Emissions per Cow</span>
+          <span class="param-unit">(kg CO₂e/yr)</span>
+          <span class="tooltip-trigger" data-tooltip="Annual manure-management emissions per cow, including methane and nitrous oxide.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-manure" min="0" max="1000" value="200" step="10">
+          <input type="number" id="input-manure" min="0" max="1000" value="200" step="10">
+        </div>
+      </div>
+
+      <hr class="divider">
+      <h3 class="sub-heading">Emission Factors</h3>
+
+      <!-- Electricity EF -->
+      <div class="input-group">
+        <label for="input-elecEF">
+          <span class="param-label">Electricity Emission Factor</span>
+          <span class="param-unit">(kg CO₂e/kWh)</span>
+          <span class="tooltip-trigger" data-tooltip="CO₂ equivalent emitted per kWh of grid electricity consumed. Varies by region and energy mix.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-elecEF" min="0.10" max="2.00" value="0.70" step="0.01">
+          <input type="number" id="input-elecEF" min="0.10" max="2.00" value="0.70" step="0.01">
+        </div>
+      </div>
+
+      <!-- Diesel EF -->
+      <div class="input-group">
+        <label for="input-dieselEF">
+          <span class="param-label">Diesel Emission Factor</span>
+          <span class="param-unit">(kg CO₂e/L)</span>
+          <span class="tooltip-trigger" data-tooltip="CO₂ equivalent emitted per litre of diesel combusted.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-dieselEF" min="1.00" max="5.00" value="2.68" step="0.01">
+          <input type="number" id="input-dieselEF" min="1.00" max="5.00" value="2.68" step="0.01">
+        </div>
+      </div>
+
+      <!-- Feed EF -->
+      <div class="input-group">
+        <label for="input-feedEF">
+          <span class="param-label">Feed Emission Factor</span>
+          <span class="param-unit">(kg CO₂e/kg)</span>
+          <span class="tooltip-trigger" data-tooltip="CO₂ equivalent emitted per kilogram of purchased cattle feed, covering production and transport.">?</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-feedEF" min="0.10" max="2.00" value="0.50" step="0.01">
+          <input type="number" id="input-feedEF" min="0.10" max="2.00" value="0.50" step="0.01">
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Results & Charts -->
+    <div class="results-area">
+      <!-- Summary Cards -->
+      <div class="cards-row" id="summary-cards">
+        <div class="card card-highlight" id="card-total">
+          <div class="card-icon"><i data-lucide="cloud"></i></div>
+          <div class="card-body">
+            <span class="card-value" id="display-totalKg">&mdash;</span>
+            <span class="card-label">kg CO₂e / year</span>
+            <span class="card-value-sub" id="display-totalTonnes">&mdash;</span>
+            <span class="card-label-sub">tonnes CO₂e / year</span>
+          </div>
+        </div>
+        <div class="card" id="card-perCow">
+          <div class="card-icon"><i data-lucide="target"></i></div>
+          <div class="card-body">
+            <span class="card-value" id="display-perCow">&mdash;</span>
+            <span class="card-label">kg CO₂e per cow / year</span>
+          </div>
+        </div>
+        <div class="card" id="card-impact">
+          <div class="card-icon"><i data-lucide="activity"></i></div>
+          <div class="card-body">
+            <span class="card-value impact-indicator" id="display-impact">&mdash;</span>
+            <span class="card-label">Environmental Impact Level</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Breakdown Table -->
+      <div class="panel" id="breakdown-panel">
+        <h2><i data-lucide="pie-chart"></i> Emissions Breakdown</h2>
+        <div class="table-wrap">
+          <table class="data-table" id="breakdown-table">
+            <thead>
+              <tr><th>Source</th><th>Emissions (kg CO₂e)</th><th>% of Total</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="source-dot dot-enteric"></span> Enteric Methane</td><td id="display-enteric">&mdash;</td><td id="display-entericPct">&mdash;</td></tr>
+              <tr><td><span class="source-dot dot-electricity"></span> Electricity</td><td id="display-electricity">&mdash;</td><td id="display-electricityPct">&mdash;</td></tr>
+              <tr><td><span class="source-dot dot-diesel"></span> Diesel</td><td id="display-diesel">&mdash;</td><td id="display-dieselPct">&mdash;</td></tr>
+              <tr><td><span class="source-dot dot-feed"></span> Feed</td><td id="display-feed">&mdash;</td><td id="display-feedPct">&mdash;</td></tr>
+              <tr><td><span class="source-dot dot-manure"></span> Manure Management</td><td id="display-manure">&mdash;</td><td id="display-manurePct">&mdash;</td></tr>
+              <tr class="total-row"><td><strong>Total</strong></td><td id="display-breakdownTotal"><strong>&mdash;</strong></td><td><strong>100%</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-row">
+        <div class="chart-container">
+          <h3>Emissions by Source</h3>
+          <canvas id="chart-doughnut"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Emissions Comparison</h3>
+          <canvas id="chart-bar"></canvas>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer">
+        <i data-lucide="alert-triangle"></i>
+        <p>These values are <strong>illustrative assumptions for educational purposes</strong>, not verified measurements or official emission factors. Carbon sequestration, construction emissions, purchased equipment, and other lifecycle effects are excluded from this simplified model.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== SECTION: SIMULATOR ======== -->
+<section class="section" id="section-simulator">
+  <div class="section-header">
+    <h1><i data-lucide="flask-conical"></i> "What If?" Scenario Simulator</h1>
+    <p class="section-subtitle">Explore how different interventions affect your farm's carbon footprint</p>
+  </div>
+
+  <div class="scenarios-grid" id="scenarios-grid">
+
+    <!-- Scenario 1: Biogas -->
+    <div class="scenario-card" id="scenario-biogas">
+      <div class="scenario-header">
+        <div class="scenario-title"><i data-lucide="flame"></i><h3>Install a Biogas Plant</h3></div>
+        <label class="toggle"><input type="checkbox" id="toggle-biogas"><span class="toggle-slider"></span></label>
+      </div>
+      <p class="scenario-desc">Capture methane from manure through anaerobic digestion, reducing manure-management emissions.</p>
+      <div class="scenario-control">
+        <label>Manure emission reduction: <strong id="label-biogas">50%</strong></label>
+        <input type="range" id="slider-biogas" min="0" max="80" value="50" step="1">
+      </div>
+      <div class="scenario-result" id="result-biogas">
+        <div class="result-row"><span>Original manure emissions:</span><span id="biogas-original">&mdash;</span></div>
+        <div class="result-row"><span>New manure emissions:</span><span id="biogas-new">&mdash;</span></div>
+        <div class="result-row"><span>Emissions saved:</span><span id="biogas-saved">&mdash;</span></div>
+        <div class="result-row"><span>New farm footprint:</span><span id="biogas-farmTotal">&mdash;</span></div>
+        <div class="result-row highlight"><span>Reduction:</span><span id="biogas-pct">&mdash;</span></div>
+      </div>
+      <p class="scenario-note"><i data-lucide="info"></i> Actual benefits depend on manure collection efficiency, methane capture rate, and system performance.</p>
+    </div>
+
+    <!-- Scenario 2: Solar -->
+    <div class="scenario-card" id="scenario-solar">
+      <div class="scenario-header">
+        <div class="scenario-title"><i data-lucide="sun"></i><h3>Switch to Solar Power</h3></div>
+        <label class="toggle"><input type="checkbox" id="toggle-solar"><span class="toggle-slider"></span></label>
+      </div>
+      <p class="scenario-desc">Replace grid electricity with solar-powered systems to reduce electricity-related emissions.</p>
+      <div class="scenario-control">
+        <label>Electricity replaced by solar: <strong id="label-solar">50%</strong></label>
+        <input type="range" id="slider-solar" min="0" max="100" value="50" step="1">
+      </div>
+      <div class="scenario-result" id="result-solar">
+        <div class="result-row"><span>Original electricity emissions:</span><span id="solar-original">&mdash;</span></div>
+        <div class="result-row"><span>New electricity emissions:</span><span id="solar-new">&mdash;</span></div>
+        <div class="result-row"><span>Emissions saved:</span><span id="solar-saved">&mdash;</span></div>
+        <div class="result-row"><span>New farm footprint:</span><span id="solar-farmTotal">&mdash;</span></div>
+        <div class="result-row highlight"><span>Reduction:</span><span id="solar-pct">&mdash;</span></div>
+      </div>
+      <p class="scenario-note"><i data-lucide="info"></i> Lifecycle emissions from solar equipment manufacturing are excluded from this simplified model.</p>
+    </div>
+
+    <!-- Scenario 3: Feed Improvement -->
+    <div class="scenario-card" id="scenario-feedImprove">
+      <div class="scenario-header">
+        <div class="scenario-title"><i data-lucide="wheat"></i><h3>Improve Cattle Feeding</h3></div>
+        <label class="toggle"><input type="checkbox" id="toggle-feedImprove"><span class="toggle-slider"></span></label>
+      </div>
+      <p class="scenario-desc">Optimize feed composition to reduce enteric methane production from cattle digestion.</p>
+      <div class="scenario-control">
+        <label>Methane emission reduction: <strong id="label-feedImprove">10%</strong></label>
+        <input type="range" id="slider-feedImprove" min="0" max="20" value="10" step="1">
+      </div>
+      <div class="scenario-result" id="result-feedImprove">
+        <div class="result-row"><span>Original enteric emissions:</span><span id="feedImprove-original">&mdash;</span></div>
+        <div class="result-row"><span>New enteric emissions:</span><span id="feedImprove-new">&mdash;</span></div>
+        <div class="result-row"><span>Emissions saved:</span><span id="feedImprove-saved">&mdash;</span></div>
+        <div class="result-row"><span>New farm footprint:</span><span id="feedImprove-farmTotal">&mdash;</span></div>
+        <div class="result-row highlight"><span>Reduction:</span><span id="feedImprove-pct">&mdash;</span></div>
+      </div>
+      <p class="scenario-note"><i data-lucide="info"></i> Real reductions depend on animal diet, health, productivity, and locally appropriate feeding practices. No feed additive or diet change is universally effective or safe.</p>
+    </div>
+
+    <!-- Scenario 4: Electricity Reduction -->
+    <div class="scenario-card" id="scenario-elecReduce">
+      <div class="scenario-header">
+        <div class="scenario-title"><i data-lucide="zap"></i><h3>Reduce Electricity Use</h3></div>
+        <label class="toggle"><input type="checkbox" id="toggle-elecReduce"><span class="toggle-slider"></span></label>
+      </div>
+      <p class="scenario-desc">Improve energy efficiency with better pumps, LED lighting, and equipment maintenance.</p>
+      <div class="scenario-control">
+        <label>Electricity consumption reduction: <strong id="label-elecReduce">20%</strong></label>
+        <input type="range" id="slider-elecReduce" min="0" max="50" value="20" step="1">
+      </div>
+      <div class="scenario-result" id="result-elecReduce">
+        <div class="result-row"><span>Original electricity emissions:</span><span id="elecReduce-original">&mdash;</span></div>
+        <div class="result-row"><span>New electricity emissions:</span><span id="elecReduce-new">&mdash;</span></div>
+        <div class="result-row"><span>Emissions saved:</span><span id="elecReduce-saved">&mdash;</span></div>
+        <div class="result-row"><span>New farm footprint:</span><span id="elecReduce-farmTotal">&mdash;</span></div>
+        <div class="result-row highlight"><span>Reduction:</span><span id="elecReduce-pct">&mdash;</span></div>
+      </div>
+      <p class="scenario-note"><i data-lucide="info"></i> Savings depend on current equipment age, usage patterns, and upgrade costs.</p>
+    </div>
+
+    <!-- Scenario 5: Diesel Reduction -->
+    <div class="scenario-card" id="scenario-dieselReduce">
+      <div class="scenario-header">
+        <div class="scenario-title"><i data-lucide="fuel"></i><h3>Reduce Diesel Usage</h3></div>
+        <label class="toggle"><input type="checkbox" id="toggle-dieselReduce"><span class="toggle-slider"></span></label>
+      </div>
+      <p class="scenario-desc">Optimise farm operations, maintain machinery, and reduce unnecessary vehicle trips.</p>
+      <div class="scenario-control">
+        <label>Diesel consumption reduction: <strong id="label-dieselReduce">20%</strong></label>
+        <input type="range" id="slider-dieselReduce" min="0" max="50" value="20" step="1">
+      </div>
+      <div class="scenario-result" id="result-dieselReduce">
+        <div class="result-row"><span>Original diesel emissions:</span><span id="dieselReduce-original">&mdash;</span></div>
+        <div class="result-row"><span>New diesel emissions:</span><span id="dieselReduce-new">&mdash;</span></div>
+        <div class="result-row"><span>Emissions saved:</span><span id="dieselReduce-saved">&mdash;</span></div>
+        <div class="result-row"><span>New farm footprint:</span><span id="dieselReduce-farmTotal">&mdash;</span></div>
+        <div class="result-row highlight"><span>Reduction:</span><span id="dieselReduce-pct">&mdash;</span></div>
+      </div>
+      <p class="scenario-note"><i data-lucide="info"></i> Benefits depend on current usage patterns, farm layout, and machinery condition.</p>
+    </div>
+  </div>
+
+  <!-- Combined Results -->
+  <div class="panel" id="combined-results">
+    <h2><i data-lucide="layers"></i> Combined Scenario Results</h2>
+    <p class="panel-subtitle">Results when all selected interventions are applied together (no double-counting).</p>
+    <div class="combined-summary">
+      <div class="combined-card">
+        <span class="combined-label">Original Total</span>
+        <span class="combined-value" id="sim-originalTotal">&mdash;</span>
+        <span class="combined-sub">kg CO₂e/yr</span>
+      </div>
+      <div class="combined-card highlight">
+        <span class="combined-label">New Total</span>
+        <span class="combined-value" id="sim-newTotal">&mdash;</span>
+        <span class="combined-sub">kg CO₂e/yr</span>
+      </div>
+      <div class="combined-card success">
+        <span class="combined-label">Emissions Saved</span>
+        <span class="combined-value" id="sim-saved">&mdash;</span>
+        <span class="combined-sub" id="sim-savedTonnes">&mdash; tonnes</span>
+      </div>
+      <div class="combined-card">
+        <span class="combined-label">Overall Reduction</span>
+        <span class="combined-value" id="sim-pctReduction">&mdash;</span>
+      </div>
+    </div>
+    <div class="chart-container chart-wide">
+      <h3>Before vs After Comparison by Source</h3>
+      <canvas id="chart-comparison"></canvas>
+    </div>
+    <div class="disclaimer">
+      <i data-lucide="info"></i>
+      <p>When multiple interventions affect the same source (e.g., solar power + electricity reduction), reductions are applied sequentially to <strong>prevent double-counting</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======== SECTION: PREDICTIONS ======== -->
+<section class="section" id="section-predictions">
+  <div class="section-header">
+    <h1><i data-lucide="trending-up"></i> Future Carbon Footprint Prediction</h1>
+    <p class="section-subtitle">Project emissions for the next 1, 3, and 5 years under different scenarios</p>
+  </div>
+
+  <div class="disclaimer disclaimer-top">
+    <i data-lucide="alert-triangle"></i>
+    <p>These are <strong>model-based projections</strong> using simple growth assumptions, not predictions from a trained machine-learning model. Uncertainty increases over longer forecast periods.</p>
+  </div>
+
+  <div class="panel" id="growth-panel">
+    <h2><i data-lucide="sliders"></i> Annual Growth Assumptions</h2>
+    <div class="growth-inputs">
+      <div class="input-group">
+        <label for="input-herdGrowth">
+          <span class="param-label">Herd Size Growth</span>
+          <span class="param-unit">(%/year)</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-herdGrowth" min="-10" max="20" value="5" step="1">
+          <input type="number" id="input-herdGrowth" min="-10" max="20" value="5" step="1">
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="input-elecGrowth">
+          <span class="param-label">Electricity Growth</span>
+          <span class="param-unit">(%/year)</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-elecGrowth" min="-10" max="20" value="2" step="1">
+          <input type="number" id="input-elecGrowth" min="-10" max="20" value="2" step="1">
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="input-feedGrowth">
+          <span class="param-label">Feed Consumption Growth</span>
+          <span class="param-unit">(%/year)</span>
+        </label>
+        <div class="input-row">
+          <input type="range" id="slider-feedGrowth" min="-10" max="20" value="3" step="1">
+          <input type="number" id="input-feedGrowth" min="-10" max="20" value="3" step="1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><i data-lucide="table"></i> Emissions Forecast</h2>
+    <div class="table-wrap">
+      <table class="data-table" id="forecast-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>BAU (kg CO₂e)</th>
+            <th>BAU (tonnes)</th>
+            <th>Sustainable (kg CO₂e)</th>
+            <th>Sustainable (tonnes)</th>
+            <th>Savings (tonnes)</th>
+          </tr>
+        </thead>
+        <tbody id="forecast-tbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-container chart-wide">
+    <h3>Emissions Projection (BAU vs Sustainable)</h3>
+    <canvas id="chart-forecast"></canvas>
+  </div>
+</section>
+
+<!-- ======== SECTION: RECOMMENDATIONS ======== -->
+<section class="section" id="section-recommendations">
+  <div class="section-header">
+    <h1><i data-lucide="lightbulb"></i> Personalized Sustainability Recommendations</h1>
+    <p class="section-subtitle">Based on your farm's current emission profile and selected interventions</p>
+  </div>
+  <div id="recommendations-container" class="recommendations-grid">
+    <!-- Populated by JS -->
+  </div>
+</section>
+
+<!-- ======== SECTION: COMPARE ======== -->
+<section class="section" id="section-compare">
+  <div class="section-header">
+    <h1><i data-lucide="bar-chart-3"></i> Scenario Comparison</h1>
+    <p class="section-subtitle">Compare different farm configurations side by side</p>
+  </div>
+
+  <div class="compare-toolbar">
+    <button id="btn-save-scenario" class="btn btn-primary"><i data-lucide="save"></i> Save Current Scenario</button>
+    <button id="btn-clear-scenarios" class="btn btn-secondary"><i data-lucide="trash-2"></i> Clear Saved</button>
+    <button id="btn-export-csv" class="btn btn-secondary"><i data-lucide="download"></i> Export CSV</button>
+    <button id="btn-print-report" class="btn btn-secondary"><i data-lucide="printer"></i> Print Report</button>
+  </div>
+
+  <div class="panel">
+    <h2><i data-lucide="table"></i> Comparison Table</h2>
+    <div class="table-wrap">
+      <table class="data-table comparison-table" id="compare-table">
+        <thead id="compare-thead">
+          <tr>
+            <th>Metric</th>
+            <th>Baseline</th>
+            <th>Current</th>
+          </tr>
+        </thead>
+        <tbody id="compare-tbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-container chart-wide">
+    <h3>Total Emissions by Scenario</h3>
+    <canvas id="chart-compare-bar"></canvas>
+  </div>
+</section>
+
+<!-- ======== SECTION: ABOUT ======== -->
+<section class="section" id="section-about">
+  <div class="section-header">
+    <h1><i data-lucide="info"></i> About EcoDairy &amp; Methodology</h1>
+    <p class="section-subtitle">Understanding carbon footprint analysis for dairy farms</p>
+  </div>
+
+  <div class="about-content">
+
+    <div class="about-section">
+      <h2><i data-lucide="cloud"></i> What is a Carbon Footprint?</h2>
+      <p>A <strong>carbon footprint</strong> is the total amount of greenhouse gases (GHGs) produced directly and indirectly by an activity, organisation, event, or product. It is measured in units of <strong>carbon dioxide equivalent (CO₂e)</strong>, which allows different greenhouse gases to be compared on a common scale based on their global warming potential.</p>
+      <p>For a dairy farm, the carbon footprint includes emissions from the cattle themselves (enteric fermentation and manure), energy use (electricity and diesel), and the production and transport of purchased feed.</p>
+    </div>
+
+    <div class="about-section">
+      <h2><i data-lucide="equal"></i> What is CO₂ Equivalent (CO₂e)?</h2>
+      <p><strong>CO₂ equivalent</strong> is a metric used to express the impact of different greenhouse gases in terms of the amount of CO₂ that would create the same amount of warming. This uses <strong>Global Warming Potential (GWP)</strong> values:</p>
+      <ul>
+        <li><strong>Carbon dioxide (CO₂):</strong> GWP = 1 (reference gas)</li>
+        <li><strong>Methane (CH₄):</strong> GWP ≈ 28 over 100 years — methane is about 28 times more potent than CO₂</li>
+        <li><strong>Nitrous oxide (N₂O):</strong> GWP ≈ 265 over 100 years</li>
+      </ul>
+      <p>When we say "1,500 kg CO₂e per cow," this means the methane (and other gases) from one cow have the same warming effect as 1,500 kg of CO₂.</p>
+    </div>
+
+    <div class="about-section">
+      <h2><i data-lucide="milk"></i> Why Do Dairy Farms Produce GHG Emissions?</h2>
+      <p>Dairy farms are significant sources of greenhouse gases due to several interconnected biological and operational processes:</p>
+      <ul>
+        <li><strong>Enteric Fermentation:</strong> Cows are ruminant animals with a specialized digestive system. Microorganisms in their rumen break down cellulose-rich plant material, producing methane as a by-product. This is the single largest source of emissions on most dairy farms.</li>
+        <li><strong>Manure Management:</strong> When manure decomposes, especially under anaerobic (oxygen-free) conditions in storage lagoons or heaps, it produces methane and nitrous oxide.</li>
+        <li><strong>Energy Use:</strong> Farms consume electricity for milking machines, refrigeration, lighting, and water pumps, and diesel for tractors, feed transport, and field operations.</li>
+        <li><strong>Feed Production:</strong> Growing, processing, and transporting cattle feed involves energy use, fertiliser application, and land-use change, all of which generate emissions.</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <h2><i data-lucide="list"></i> Emission Sources Explained</h2>
+
+      <h3>1. Enteric Methane</h3>
+      <p>Enteric methane refers to the CH₄ produced during the normal digestive process of ruminant animals. A single dairy cow can produce 70–120 kg of methane per year, which translates to roughly 1,960–3,360 kg CO₂e using a GWP of 28. In this model, we use a default of 1,500 kg CO₂e per cow per year as an illustrative value.</p>
+
+      <h3>2. Manure Management</h3>
+      <p>Manure-management emissions arise when livestock waste decomposes. The emissions depend on how manure is stored and handled — liquid systems (lagoons) produce more methane than solid systems or pasture-deposited manure. Our default is 200 kg CO₂e per cow per year.</p>
+
+      <h3>3. Electricity</h3>
+      <p>Electricity emissions depend on both the amount consumed and the emission factor of the electricity grid. Regions with more coal-fired power have higher emission factors (0.8–1.0 kg CO₂e/kWh), while regions with more renewables have lower factors (0.1–0.4 kg CO₂e/kWh). Our default is 0.70 kg CO₂e/kWh.</p>
+
+      <h3>4. Diesel</h3>
+      <p>Diesel combustion releases CO₂ directly. The standard emission factor is approximately 2.68 kg CO₂e per litre, accounting for both direct combustion emissions and a small upstream component.</p>
+
+      <h3>5. Feed-Related Emissions</h3>
+      <p>These cover the emissions embedded in purchased feed — from fertiliser production, field operations, processing, and transport. The emission factor varies widely by feed type and origin. Our default of 0.50 kg CO₂e/kg is a simplified average for illustrative purposes.</p>
+    </div>
+
+    <div class="about-section">
+      <h2><i data-lucide="calculator"></i> Calculation Methodology</h2>
+      <p>This tool uses a transparent, activity-based methodology. Each emission source is calculated separately using the formula:</p>
+      <div class="formula-box">
+        <p><strong>Enteric Emissions</strong> = Number of Cows × Methane per Cow (kg CO₂e)</p>
+        <p><strong>Electricity Emissions</strong> = Electricity Consumed (kWh) × Electricity EF (kg CO₂e/kWh)</p>
+        <p><strong>Diesel Emissions</strong> = Diesel Consumed (L) × Diesel EF (kg CO₂e/L)</p>
+        <p><strong>Feed Emissions</strong> = Feed Purchased (kg) × Feed EF (kg CO₂e/kg)</p>
+        <p><strong>Manure Emissions</strong> = Number of Cows × Manure per Cow (kg CO₂e)</p>
+        <hr>
+        <p><strong>Total Emissions</strong> = Enteric + Electricity + Diesel + Feed + Manure</p>
+        <p><strong>Total (tonnes)</strong> = Total (kg) ÷ 1,000</p>
+        <hr>
+        <p><strong>Emissions Saved</strong> = Baseline Emissions − Scenario Emissions</p>
+        <p><strong>% Reduction</strong> = (Emissions Saved ÷ Baseline Emissions) × 100</p>
+      </div>
+
+      <h3>Projection Method</h3>
+      <div class="formula-box">
+        <p><strong>Projected Activity (Year n)</strong> = Current Activity × (1 + Annual Growth Rate)ⁿ</p>
+        <p><strong>Projected Emissions</strong> = Σ (Projected Activity × Emission Factor) for each source</p>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2><i data-lucide="alert-circle"></i> Assumptions &amp; Limitations</h2>
+      <ul>
+        <li>All emission factors are illustrative educational assumptions, not official or region-specific values.</li>
+        <li><strong>Excluded sources:</strong> Carbon sequestration by pasture or trees, construction/building emissions, embodied emissions in purchased equipment, transport of products to market, and animal feed grown on-farm.</li>
+        <li>The model uses a static emission factor approach — real-world emission factors may change over time.</li>
+        <li>No financial cost or return-on-investment analysis is included.</li>
+        <li>Projections use simple compound-growth assumptions and do not account for market changes, policy, or climate variability.</li>
+        <li>Feed improvement impacts on methane are highly variable; the 0–20% range is a simplified educational estimate.</li>
+        <li>This tool is designed for educational demonstration and should not be used for regulatory reporting or commercial decision-making.</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <h2><i data-lucide="sprout"></i> Sustainable Livestock Management</h2>
+      <p>Sustainable livestock management aims to balance productivity with environmental responsibility. Key strategies include:</p>
+      <ul>
+        <li><strong>Improved feed efficiency:</strong> Better nutrition can reduce methane per unit of milk produced.</li>
+        <li><strong>Manure management:</strong> Anaerobic digesters can capture methane for energy while reducing emissions.</li>
+        <li><strong>Renewable energy:</strong> Solar panels and wind turbines can power farm operations with lower emissions.</li>
+        <li><strong>Operational efficiency:</strong> Regular machinery maintenance, route optimization, and energy-efficient equipment reduce energy waste.</li>
+        <li><strong>Herd management:</strong> Genetic selection, animal health programs, and optimised herd size can improve emissions intensity per litre of milk.</li>
+      </ul>
+      <p>Every farm is unique — sustainable improvements should be evaluated with qualified agricultural and environmental advisors who understand local conditions.</p>
+    </div>
+
+    <div class="about-section">
+      <h2><i data-lucide="graduation-cap"></i> Project Information</h2>
+      <p>This project — <strong>"EcoDairy: Smart Carbon Footprint Analyzer for Dairy Farms"</strong> — is a microproject for the <strong>Environmental Studies (EVS)</strong> course for <strong>Information Science &amp; Engineering</strong> students.</p>
+      <p>It demonstrates how ISE concepts — data processing, mathematical modeling, visualization, interactive software development, and decision-support systems — can be applied to a real environmental problem.</p>
+      <p><strong>Case Study:</strong> Lakshmi owns a dairy farm with 10 cows. She wants to understand the farm's annual carbon footprint and discover ways to reduce its environmental impact without compromising milk production or operations.</p>
+      <p><strong>Technology Stack:</strong> HTML5, CSS3, JavaScript, Chart.js, Lucide Icons, LocalStorage.</p>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<!-- ======== SAVE MODAL ======== -->
+<div class="modal-overlay" id="modal-save">
+  <div class="modal-content">
+    <h3><i data-lucide="save"></i> Save Current Scenario</h3>
+    <div class="modal-body">
+      <label for="scenario-name-input">Scenario Name:</label>
+      <input type="text" id="scenario-name-input" placeholder="e.g., Solar + Biogas Plan" maxlength="50">
+    </div>
+    <div class="modal-actions">
+      <button id="btn-confirm-save" class="btn btn-primary">Save</button>
+      <button id="btn-cancel-save" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== FOOTER ======== -->
+<footer id="app-footer">
+  <div class="footer-inner">
+    <p><i data-lucide="leaf"></i> EcoDairy — Smart Carbon Footprint Analyzer for Dairy Farms</p>
+    <p class="footer-sub">Environmental Studies Microproject · Information Science &amp; Engineering · 2026</p>
+  </div>
+</footer>
+
+<!-- ======== TOAST NOTIFICATION ======== -->
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
